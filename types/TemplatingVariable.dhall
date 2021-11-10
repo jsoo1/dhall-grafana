@@ -104,4 +104,6 @@ in
 
 { Types = Types
 , VariableType = VariableType
+, Current
+, Option
 }
