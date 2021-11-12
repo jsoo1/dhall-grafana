@@ -16,7 +16,7 @@ let hide = λ(hide : Bool) → boolFold hide Natural 2 0
 
 let queryValue =
       { allValue = None Text
-      , current = None TemplatingVariable.Option
+      , current = None (TemplatingVariable.Option Text)
       , datasource = "Prometheus"
       , hide = 0
       , includeAll = True
@@ -24,7 +24,7 @@ let queryValue =
       , description = None Text
       , multi = True
       , name = "query"
-      , options = [] : List TemplatingVariable.Option
+      , options = [] : List (TemplatingVariable.Option Text)
       , query = "label_values(hass_temperature_c, entity)"
       , refresh = 1
       , regex = "/.*/"
@@ -48,16 +48,16 @@ let intervalValue =
       { auto = None Bool
       , auto_count = None Natural
       , auto_min = None Text
-      , current = None TemplatingVariable.Current
+      , current = None (TemplatingVariable.Current Text)
       , hide = 0
       , label = None Text
       , description = None Text
       , name = "interval"
       , options =
-        [ TemplatingVariable.Option.Single { selected = True, text = "5s", value = "5s" }
-        , TemplatingVariable.Option.Single { selected = False, text = "10s", value = "10s" }
-        , TemplatingVariable.Option.Single { selected = False, text = "15s", value = "15s" }
-        , TemplatingVariable.Option.Single { selected = False, text = "20s", value = "20s" }
+        [ { selected = True, text = "5s", value = "5s" }
+        , { selected = False, text = "10s", value = "10s" }
+        , { selected = False, text = "15s", value = "15s" }
+        , { selected = False, text = "20s", value = "20s" }
         ]
       , query = "5s,10s,15s,20s"
       , skipUrlSync = False
@@ -70,11 +70,11 @@ let mkInterval =
       λ(name : Text) →
       λ(options : List Text) →
       λ(_hide : Bool) →
-        let opt =
+        let opt : List (TemplatingVariable.Option Text) =
               map
                 Text
-                TemplatingVariable.Option
-                (λ(o : Text) → TemplatingVariable.Option.Single { selected = False, text = o, value = o })
+                (TemplatingVariable.Option Text)
+                (λ(o : Text) →  { selected = False, text = o, value = o })
                 options
 
         in  Templating.IntervalVariable
@@ -90,8 +90,8 @@ let datasourceValue =
       { includeAll = False
       , multi = False
       , regex = ""
-      , current = None TemplatingVariable.Option
-      , options = [] : List TemplatingVariable.Option
+      , current = None (TemplatingVariable.Option Text)
+      , options = [] : List (TemplatingVariable.Option Text)
       , query = "prometheus"
       , hide = 0
       , label = None Text
@@ -113,7 +113,7 @@ let mkDatasource =
 
 let customValue =
       { allValue = None Text
-      , current = None TemplatingVariable.Option
+      , current = None (TemplatingVariable.Option Text)
       , hide = 0
       , includeAll = True
       , label = None Text
@@ -121,11 +121,11 @@ let customValue =
       , multi = True
       , name = "custom"
       , options =
-        [ TemplatingVariable.Option.Single { selected = True, text = "6", value = "6" }
-        , TemplatingVariable.Option.Single { selected = False, text = "7", value = "7" }
-        , TemplatingVariable.Option.Single { selected = False, text = "8", value = "8" }
-        , TemplatingVariable.Option.Single { selected = False, text = "9", value = "9" }
-        , TemplatingVariable.Option.Single { selected = False, text = "10", value = "10" }
+        [ { selected = True, text = "6", value = "6" }
+        , { selected = False, text = "7", value = "7" }
+        , { selected = False, text = "8", value = "8" }
+        , { selected = False, text = "9", value = "9" }
+        , { selected = False, text = "10", value = "10" }
         ]
       , query = "6,7,8,9"
       , skipUrlSync = False
@@ -141,8 +141,8 @@ let mkCustom =
         let opt =
               map
                 Text
-                TemplatingVariable.Option
-                (λ(o : Text) → TemplatingVariable.Option.Single { selected = False, text = o, value = o })
+                (TemplatingVariable.Option Text)
+                (λ(o : Text) →  { selected = False, text = o, value = o })
                 options
 
         in  Templating.CustomVariable
@@ -154,13 +154,55 @@ let mkCustom =
                   }
               )
 
+let customMultiValue =
+      { allValue = None Text
+      , current = { selected = False, text = [] : List Text, value = [] : List Text }
+      , hide = 0
+      , includeAll = True
+      , label = None Text
+      , description = None Text
+      , multi = True
+      , name = "custom"
+      , options = [] : List (TemplatingVariable.Option Text)
+      , query = "6,7,8,9"
+      , skipUrlSync = False
+      , type = VariableType.custom
+      }
+
+let CustomMultiVariable = Templating.CustomMultiVariable customMultiValue
+
+let mkCustomMulti =
+      λ(name : Text) →
+      λ(options : List Text) →
+      λ(_hide : Bool) →
+        let opt =
+              map
+                Text
+                (TemplatingVariable.Option Text)
+                (λ(o : Text) →  { selected = False, text = o, value = o })
+                options
+
+        in  Templating.CustomMultiVariable
+              (   customMultiValue
+                ⫽ { name
+                  , current =
+                    { selected = False
+                    , text = options
+                    , value = options
+                    }
+                  , options = opt
+                  , query = concatSep "," options
+                  , hide = hide _hide
+                  }
+              )
+
 let constantValue =
-      { current = None TemplatingVariable.Option
+      { current = None (TemplatingVariable.Option Text)
       , hide = 0
       , label = None Text
       , description = None Text
       , name = "constant"
-      , options = [ TemplatingVariable.Option.Single { selected = True, text = "9999", value = "9999" } ]
+      , options = [ { selected = True, text = "9999", value = "9999" } ]
       , query = "9999"
       , skipUrlSync = False
       , type = VariableType.constant
@@ -176,18 +218,18 @@ let mkConstant =
           (   constantValue
             ⫽ { name
               , query = value
-              , options = [ TemplatingVariable.Option.Single { selected = True, text = value, value } ]
+              , options = [ { selected = True, text = value, value } ]
               , hide = hide _hide
               }
           )
 
 let textboxValue =
-      { current = None TemplatingVariable.Current
+      { current = None (TemplatingVariable.Current Text)
       , hide = 0
       , label = None Text
       , description = None Text
       , name = "textbox"
-      , options = [] : List TemplatingVariable.Option
+      , options = [] : List (TemplatingVariable.Option Text)
       , query =
           ''
           Textbox value,
@@ -207,7 +249,7 @@ let mkTextbox =
           (   textboxValue
             ⫽ { name
               , query = value
-              , current = Some (TemplatingVariable.Option.Single { text = name, value, selected = True })
+              , current = Some ({ text = name, value, selected = True })
               , hide = hide _hide
               }
           )

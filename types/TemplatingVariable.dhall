@@ -7,9 +7,7 @@ let VariableType =
     | adhoc
     | textbox >
 
-let OptionSingle = { selected : Bool, text : Text, value : Text }
-let OptionMulti = { selected : Bool, text : List Text, value : List Text }
-let Option = < Single : OptionSingle | Multi : OptionMulti >
+let Option : Type -> Type = \(a : Type) -> { selected : Bool, text : a, value : a }
 let Current = Option
 
 let TemplatingVariableBase =
@@ -30,9 +28,9 @@ let QueryVariable =
     , regex: Text
     , sort: Natural
     , refresh : Natural
-    , options: List Option
+    , options: List (Option Text)
     , datasource: Text
-    , current: Optional Current
+    , current: Optional (Current Text)
     , useTags: Bool
     }
 
@@ -42,8 +40,8 @@ let IntervalVariable =
     , auto : Optional Bool
     , auto_count : Optional Natural
     , auto_min : Optional Text
-    , options: List Option
-    , current: Optional Current
+    , options: List (Option Text)
+    , current: Optional (Current Text)
     }
 
 let DatasourceVariable =
@@ -52,8 +50,8 @@ let DatasourceVariable =
     , includeAll : Bool
     , multi : Bool
     , regex: Text
-    , options: List Option
-    , current: Optional Current
+    , options: List (Option Text)
+    , current: Optional (Current Text)
     }
 
 let CustomVariable =
@@ -62,22 +60,32 @@ let CustomVariable =
     , allValue: Optional Text
     , includeAll: Bool
     , multi: Bool
-    , options: List Option
-    , current: Optional Current
+    , options: List (Option Text)
+    , current: Optional (Current Text)
+    }
+
+let CustomMultiVariable =
+    TemplatingVariableBase //\\
+    { query: Text
+    , allValue: Optional Text
+    , includeAll: Bool
+    , multi: Bool
+    , options: List (Option Text)
+    , current: Current (List Text)
     }
 
 let ConstantVariable =
     TemplatingVariableBase //\\
     { query : Text
-    , options: List Option
-    , current: Optional Current
+    , options: List (Option Text)
+    , current: Optional (Current Text)
     }
 
 let TextboxVariable =
     TemplatingVariableBase //\\
     { query : Text
-    , options: List Option
-    , current: Optional Current
+    , options: List (Option Text)
+    , current: Optional (Current Text)
     }
 
 let AdHocVariable =
@@ -91,6 +99,7 @@ let Types =
     | IntervalVariable : IntervalVariable
     | DatasourceVariable : DatasourceVariable
     | CustomVariable : CustomVariable
+    | CustomMultiVariable : CustomMultiVariable
     | ConstantVariable : ConstantVariable
     | TextboxVariable : TextboxVariable
     | AdHocVariable : AdHocVariable
@@ -101,8 +110,6 @@ in
 { Types = Types
 , VariableType = VariableType
 , Current
-, OptionSingle
-, OptionMulti
 , Option
 , QueryVariable
 , IntervalVariable
